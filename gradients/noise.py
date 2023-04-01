@@ -26,7 +26,7 @@ class LaplaceNoiseGenerator(NoiseGenerator):
 
 class GaussianNoiseGenerator(NoiseGenerator):
 
-    def __init__(self, sensitivity, epsilon, delta):
+    def __init__(self, sensitivity=0.1, epsilon=0.001, delta=0.001):
         self.sensitivity = sensitivity
         self.epsilon = epsilon
         self.delta = delta

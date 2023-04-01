@@ -25,47 +25,31 @@ Requires clients to compute gradients and send them to the server, which might i
 In practice, both approaches can be used depending on the specific requirements and constraints of the Federated Learning system. In general, model averaging is simpler and more commonly used, while gradient averaging can be more suitable for certain scenarios where clients have significantly different models or when additional control over the aggregation process is needed.
 
 """
-import torch
-
 from typing import List
 from client.base_client import BaseClient
+from models.base_model import BaseModel
 
 
 class BaseServer:
-    def __init__(self, model, clients: List[BaseClient], optimizer=None):
+    def __init__(self,
+                 model: BaseModel):
         self.model = model
-        self.clients = clients
-        self.is_train = True
-        if not optimizer:
-            optimizer = torch.optim.SGD(self.model.parameters(), lr=0.01)
-        self.optimizer = optimizer
 
-    def set_model_train(self):
-        if not self.is_train:
-            self.is_train = not self.is_train
-            self.model.train()
-
-    def set_model_eval(self):
-        if self.is_train:
-            self.is_train = not self.is_train
-            self.model.eval()
-
-    def aggeragate_model(self):
-        importance_sum = sum([c.importance for c in self.clients])
-        for client in self.clients:
+    def aggeragate_model(self, clients):
+        self.model.zero_weights()
+        importance_sum = sum([c.importance for c in clients])
+        for client in clients:
             importance = client.importance / importance_sum
             for server_param, client_weight in zip(self.model.parameters(), client.weights):
-                if server_param.data is None:
-                    server_param.data = client_weight.clone() * importance
-                    continue
                 server_param.data += client_weight * importance
 
         return self.model
 
-    def aggeragate_gradient(self):
-        self.set_model_eval()
-        importance_sum = sum([c.importance for c in self.clients])
-        for client in self.clients:
+    def aggeragate_gradient(self, clients):
+        self.model.train()
+        self.model.zero_grad()
+        importance_sum = sum([c.importance for c in clients])
+        for client in clients:
             importance = client.importance / importance_sum
             for server_param, client_grad in zip(self.model.parameters(), client.gradients):
                 if server_param.grad is None:
@@ -75,11 +59,15 @@ class BaseServer:
         return self.model
 
     def update_with_gradient(self):
-        self.set_model_train()
-        self.optimizer.step()
+        self.model.train()
+        self.model.step()
         return self.model
 
-    def aggregate_and_update(self):
-        self.aggeragate_gradient()
+    def aggregate_grad_update(self, clients):
+        self.aggeragate_gradient(clients)
         self.update_with_gradient()
         return self.model
+
+    def predict(self, inputs):
+        self.model.eval()
+        return self.model(inputs)
