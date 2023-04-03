@@ -35,4 +35,4 @@ class BaseModel:
         self.optimizer.step()
 
     def copy_a_new(self):
-        return self.__class__(self.optimizer, self.loss_fn)
+        return self.__class__()

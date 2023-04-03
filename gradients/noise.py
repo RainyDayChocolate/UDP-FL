@@ -38,10 +38,5 @@ class GaussianNoiseGenerator(NoiseGenerator):
 
 class NoNoiseGenerator(NoiseGenerator):
 
-    def __init__(self, sensitivity, epsilon, delta):
-        self.sensitivity = sensitivity
-        self.epsilon = epsilon
-        self.delta = delta
-
     def mechanism(self, gradient: torch.Tensor):
         return torch.zeros(gradient.size())

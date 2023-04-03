@@ -8,7 +8,7 @@ from utils import CURRENT_FOLDER
 class MnistDatasetManager:
     def __init__(self,
                  train_split=0.8,
-                 batch_size=2,
+                 batch_size=64,
                  n_parties=2):
 
         # Seed to Shuffle the dataset

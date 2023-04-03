@@ -34,7 +34,6 @@ def multiclass_accuracy(y_true: torch.Tensor, y_pred: torch.Tensor):
     _, predicted = torch.max(y_pred, 1)
     total = y_true.size(0)
     correct = (predicted == y_true).sum().item()
-
     return correct, total
 
 

@@ -44,8 +44,9 @@ class BaseClient:
     def gradients(self):
         self.model.train()
         add_noise = lambda grad: grad + self.noise_generator.get_noise(grad)
-        return [add_noise(param.grad.clone().detach())
+        grad = [add_noise(param.grad.clone().detach())
                 for param in self.model.parameters()]
+        return grad
 
     def set_training_mode(self, for_gradient=False):
         if for_gradient:
