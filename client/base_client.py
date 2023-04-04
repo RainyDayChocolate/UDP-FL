@@ -1,7 +1,10 @@
 # Import Dataset
 # MNIST
 
+import random
 from hashlib import sha256
+
+from gradients.clipper import base_clip
 from gradients.noise import NoNoiseGenerator
 from models.base_model import BaseModel
 
@@ -11,6 +14,7 @@ class BaseClient:
                  model: BaseModel,
                  client_id,
                  importance=1,
+                 clipper=base_clip, 
                  noise_generator=None):
         """_summary_
 
@@ -27,7 +31,11 @@ class BaseClient:
             self.noise_generator = NoNoiseGenerator()
         else:
             self.noise_generator = noise_generator
-
+    
+        if clipper is None:
+            self.clipper = base_clip
+        else:
+            self.clipper = clipper
         # Default training method as train_for_model
         self.set_training_mode()
 
@@ -43,8 +51,19 @@ class BaseClient:
     @property
     def gradients(self):
         self.model.train()
-        add_noise = lambda grad: grad + self.noise_generator.get_noise(grad)
-        grad = [add_noise(param.grad.clone().detach())
+        # clip, add noise
+        # clip(noise(param.grad.clone().detach()))
+        def helper(grad):
+            clipped = self.clipper(grad)
+            add_noise = lambda grad: grad + self.noise_generator.get_noise(grad)
+            return add_noise(clipped)
+        
+        # grads = [param.grad.clone().detach() for param in self.model.parameters]
+        # clipped = [self.clipper(grad) for grad in grads]
+        # noise_grad = [self.noise_generator.get_noise(grad) + grad for grad in cliped]
+        # return noise_grad
+    
+        return [helper(param.grad.clone().detach())
                 for param in self.model.parameters()]
         return grad
 
@@ -66,3 +85,8 @@ class BaseClient:
         self.model.train()
         for inputs, labels in dataset:
             self.model.train_for_gradient(inputs, labels)
+
+    @property
+    def fake_device_id(self):
+        return random.random()
+    
