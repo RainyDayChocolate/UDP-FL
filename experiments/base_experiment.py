@@ -31,10 +31,19 @@ class BaseExperiment:
             client.model.load_state_dict(self.server.model.state_dict())
 
     @abstractmethod
+    def shuffled_data(self, to_shuffle=False):
+        if not to_shuffle:
+            return zip(self.clients, self.client_train_datas)
+        
+        #### IMPLEMENT A SHUFFLE CODE
+        
+        #return 
+    
+    @abstractmethod
     def run(self, epochs: int):
+        # templated
         for epoch in range(epochs):
-            for client, client_train_data in zip(self.clients,
-                                                 self.client_train_datas):
+            for client, client_train_data in self.shuffled_data():
                 client.train(client_train_data)
 
             self.aggeragate()
