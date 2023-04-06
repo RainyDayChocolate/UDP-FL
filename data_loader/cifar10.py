@@ -17,11 +17,11 @@ class Cifar10DatasetManager:
                 transforms.ToTensor(),
                 transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
             ])
-        train_data = torchvision.datasets.CIFAR10(root=F'{CURRENT_FOLDER}/datasets',
+        train_data = datasets.CIFAR10(root=F'{CURRENT_FOLDER}/datasets',
                                       train=True,
                                       download=True,
                                       transform=self.transformer)
-        test_data = torchvision.datasets.CIFAR10(root=F'{CURRENT_FOLDER}/datasets',
+        test_data = datasets.CIFAR10(root=F'{CURRENT_FOLDER}/datasets',
                                      train=False,
                                      download=True,
                                      transform=self.transformer)
