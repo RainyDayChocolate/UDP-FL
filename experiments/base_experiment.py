@@ -1,5 +1,6 @@
 from abc import abstractmethod
 from typing import List
+import random
 
 import torch
 
@@ -35,9 +36,16 @@ class BaseExperiment:
         if not to_shuffle:
             return zip(self.clients, self.client_train_datas)
         
-        #### IMPLEMENT A SHUFFLE CODE
         
+        #### IMPLEMENT A SHUFFLE CODE
         #return 
+        num = len(self.clients)
+        fake_client_id=list(range(num))
+        random.shuffle(fake_client_id)
+        
+        for client,fake_id in zip(self.clients, fake_client_id):
+            client.set_fake_id(fake_id)
+            
     
     @abstractmethod
     def run(self, epochs: int):

@@ -27,6 +27,7 @@ class BaseClient:
         self.is_train = False
         self.device_id = client_id
         self.importance = importance
+        self.fake_id = client_id
         if noise_generator is None:
             self.noise_generator = NoNoiseGenerator()
         else:
@@ -41,6 +42,12 @@ class BaseClient:
 
     def set_importance(self, importance):
         self.importance = importance
+    
+    def set_fake_id(self, fakeid):
+        self.fake_id = fakeid
+
+    def get_id(self):
+        return self.fake_id
 
     @property
     def weights(self):

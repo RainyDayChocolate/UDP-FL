@@ -52,7 +52,7 @@ class MnistFullConnectModel(BaseModel, nn.Module):
 
 
 class SimpleCNN(BaseModel, nn.Module):
-    def __init__(self):
+    def __init__(self, lr):
         super(SimpleCNN, self).__init__()
         self.conv1 = nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=1)
         self.relu = nn.ReLU()
@@ -60,7 +60,7 @@ class SimpleCNN(BaseModel, nn.Module):
         self.conv2 = nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)
         self.fc1 = nn.Linear(64 * 7 * 7, 128)
         self.fc2 = nn.Linear(128, 10)
-        self.optimizer = Adam(self.parameters(), lr=0.001)
+        self.optimizer = Adam(self.parameters(), lr)
         self.loss_fn = CrossEntropyLoss()
 
     def forward(self, x):
