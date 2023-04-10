@@ -51,12 +51,14 @@ class BaseClient:
 
     @property
     def weights(self):
+        # What to upload
         self.model.eval()
         for param in self.model.parameters():
-            yield param.data
+            yield param.data + self.noise_generator.get_noise(param.data)
 
     @property
     def gradients(self):
+        # 
         self.model.train()
         # clip, add noise
         # clip(noise(param.grad.clone().detach()))
@@ -80,18 +82,20 @@ class BaseClient:
         else:
             self.train = self.train_for_model
 
-    def train_for_model(self, dataset):
+    def train_for_model(self, dataset, client_epochs=2):
         # Set the model to training mode
         self.model.train()
         # Get the loss sum
-        for inputs, labels in dataset:
-            self.model.train_for_model(inputs, labels)
+        for _ in range(client_epochs):
+            for inputs, labels in dataset:
+                self.model.train_for_model(inputs, labels)
 
-    def train_for_gradient(self, dataset):
+    def train_for_gradient(self, dataset, client_epochs=1):
         # Set the model to evaluation mode
         self.model.train()
-        for inputs, labels in dataset:
-            self.model.train_for_gradient(inputs, labels)
+        for _ in range(client_epochs):
+            for inputs, labels in dataset:
+                self.model.train_for_gradient(inputs, labels)
 
     @property
     def fake_device_id(self):

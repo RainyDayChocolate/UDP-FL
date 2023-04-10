@@ -29,6 +29,7 @@ class BaseExperiment:
     @abstractmethod
     def distribute_model(self):
         for client in self.clients:
+            
             client.model.load_state_dict(self.server.model.state_dict())
 
     @abstractmethod
@@ -41,6 +42,7 @@ class BaseExperiment:
         #return 
         num = len(self.clients)
         fake_client_id=list(range(num))
+        
         random.shuffle(fake_client_id)
         
         for client,fake_id in zip(self.clients, fake_client_id):
