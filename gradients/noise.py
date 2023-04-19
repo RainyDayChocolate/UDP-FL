@@ -2,6 +2,8 @@
 import torch
 import random
 import numpy as np
+from torch.distributions import Laplace
+
 
 ## Add Noise to Model gradients
 
@@ -23,7 +25,9 @@ class LaplaceNoiseGenerator(NoiseGenerator):
         self.delta = delta
 
     def mechanism(self, gradient: torch.Tensor):
-        return torch.empty(gradient.size()).laplace_(0, 0.798)
+        laplace_distribution = Laplace(0, self.sensitivity/self.epsilon)
+        return laplace_distribution.sample(gradient.size())
+        #return torch.empty(gradient.size()).laplace_(0, 0.798)
 
 
 class GaussianNoiseGenerator(NoiseGenerator):
