@@ -1,6 +1,7 @@
 
 import torch
 import random
+import numpy as np
 
 ## Add Noise to Model gradients
 
@@ -16,29 +17,29 @@ class NoiseGenerator:
 
 class LaplaceNoiseGenerator(NoiseGenerator):
 
-    def __init__(self, sensitivity, epsilon, delta):
+    def __init__(self, sensitivity=1, epsilon=1, delta=0.000001):
         self.sensitivity = sensitivity
-        self.epsilon = epsilon
+        self.epsilon = epsilon 
         self.delta = delta
 
     def mechanism(self, gradient: torch.Tensor):
-        return torch.empty(gradient.size()).laplace_(0, self.sensitivity / self.epsilon)
+        return torch.empty(gradient.size()).laplace_(0, 0.798)
 
 
 class GaussianNoiseGenerator(NoiseGenerator):
 
-    def __init__(self, sensitivity=8, epsilon=5, delta=0.000001):
+    def __init__(self, sensitivity=0.1, epsilon=0.1, delta=0.000001):
         self.sensitivity = sensitivity
         self.epsilon = epsilon
         self.delta = delta
 
     def mechanism(self, gradient: torch.Tensor):
-        return torch.empty(gradient.size()).normal_(0, self.sensitivity / self.epsilon)
+        return torch.empty(gradient.size()).normal_(0, 0.821)
 
 class StaircaseNoiseGenerator(NoiseGenerator):
-    def __init__(self, sensitivity=0.1, epsilon=0.5, gamma=0.5):
+    def __init__(self, sensitivity=0.1, epsilon=0.015, gamma=0.498):
         self.sensitivity = sensitivity
-        self.epsilon = epsilon
+        self.epsilon = epsilon 
         self.gamma = gamma
     def mechanism(self, gradient: torch.Tensor):
         #device = 'cuda' if torch.cuda.is_available() else 'cpu'

@@ -53,7 +53,11 @@ class BaseClient:
         # What to upload
         self.model.eval()
         for param in self.model.parameters():
+<<<<<<< Updated upstream
             yield param.data
+=======
+            yield param.data #+ self.noise_generator.get_noise(param.data)
+>>>>>>> Stashed changes
 
     @property
     def gradients(self):
