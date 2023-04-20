@@ -23,7 +23,7 @@ from torch.nn import NLLLoss, CrossEntropyLoss
 
 
 class MnistFullConnectModel(BaseModel, nn.Module):
-    def __init__(self):
+    def __init__(self, max_norm: float = 2):
         #super(MnistFullConnectModel, self).__init__()
         optimizer = SGD
         loss_fn = NLLLoss()
@@ -37,7 +37,8 @@ class MnistFullConnectModel(BaseModel, nn.Module):
         self.dropout = nn.Dropout(0.5)
 
         self.optimizer = optimizer(self.parameters(), **optimizer_kwargs)
-        self.loss_fn = nn.CrossEntropyLoss()
+        self.loss_fn = nn.CrossEntropyLoss(reduction='none')
+        self.max_norm = max_norm
 
     def forward(self, x):
         x = x.view(x.size(0), -1)
@@ -52,7 +53,7 @@ class MnistFullConnectModel(BaseModel, nn.Module):
 
 
 class SimpleCNN(BaseModel, nn.Module):
-    def __init__(self, lr):
+    def __init__(self, lr, max_norm: float = 2):
         super(SimpleCNN, self).__init__()
         self.conv1 = nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=1)
         self.relu = nn.ReLU()
@@ -61,7 +62,8 @@ class SimpleCNN(BaseModel, nn.Module):
         self.fc1 = nn.Linear(64 * 7 * 7, 128)
         self.fc2 = nn.Linear(128, 10)
         self.optimizer = Adam(self.parameters(), lr)
-        self.loss_fn = CrossEntropyLoss()
+        self.loss_fn = CrossEntropyLoss(reduction='none')
+        self.max_norm = max_norm
 
     def forward(self, x):
         x = self.conv1(x)

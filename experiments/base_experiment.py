@@ -29,26 +29,26 @@ class BaseExperiment:
     @abstractmethod
     def distribute_model(self):
         for client in self.clients:
-            
+
             client.model.load_state_dict(self.server.model.state_dict())
 
     @abstractmethod
     def shuffled_data(self, to_shuffle=False):
         if not to_shuffle:
             return zip(self.clients, self.client_train_datas)
-        
-        
+
         #### IMPLEMENT A SHUFFLE CODE
-        #return 
+        #return
         num = len(self.clients)
         fake_client_id=list(range(num))
-        
+
         random.shuffle(fake_client_id)
-        
+
         for client,fake_id in zip(self.clients, fake_client_id):
             client.set_fake_id(fake_id)
-            
-    
+        return zip(self.clients, self.client_train_datas)
+
+
     @abstractmethod
     def run(self, epochs: int):
         # templated

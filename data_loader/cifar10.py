@@ -1,5 +1,6 @@
+import numpy as np
 import torch
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import DataLoader, SubsetRandomSampler, random_split
 from torchvision import datasets, transforms
 
 from utils import CURRENT_FOLDER
@@ -9,10 +10,12 @@ class Cifar10DatasetManager:
     def __init__(self,
                  train_split=0.8,
                  batch_size=64,
-                 n_parties=2):
+                 n_parties=2,
+                 sampling_lot_rate=0.01):
 
         # Seed to Shuffle the dataset
         torch.manual_seed(0)
+        self.sampling_rate = sampling_lot_rate
         self.transformer = transforms.Compose([
                 transforms.ToTensor(),
                 transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
@@ -32,7 +35,7 @@ class Cifar10DatasetManager:
         train_data, valid_data = self._split_dataset(train_data)
         n_parties_train_data = self.split_train_data(train_data, n_parties)
 
-        self.train_loaders = [self._create_dataloader(data) for data in n_parties_train_data]
+        self.train_loaders = [self.create_sampling_dataloader(data) for data in n_parties_train_data]
 
         self.validation_loader = self._create_dataloader(valid_data)
         self.test_loader = self._create_dataloader(test_data)
@@ -57,3 +60,17 @@ class Cifar10DatasetManager:
 
     def _create_dataloader(self, dataset):
         return DataLoader(dataset, batch_size=self.batch_size, shuffle=True)
+
+    def _create_sampling_dataloader(self, dataset):
+        num_samples = int(len(dataset) * self.sampling_rate)
+        indices = list(range(len(dataset)))
+        np.random.shuffle(indices)
+        sampled_indices = indices[:num_samples]
+    # Create a DataLoader using the SubsetRandomSampler with the sampled_indices
+        sampler = SubsetRandomSampler(sampled_indices)
+        data_loader = DataLoader(dataset, batch_size=self.batch_size, sampler=sampler)
+        return data_loader
+
+    def create_sampling_dataloader(self, dataset):
+        while True:
+            yield self._create_sampling_dataloader(dataset)
