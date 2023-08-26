@@ -58,6 +58,32 @@ class BaseServer:
                     server_param.grad += client_grad * importance
         return self.model
 
+    # def aggregate_gradient(self, clients):
+    #     self.model.train()
+    #     self.model.zero_grad()
+        
+    #     importance_sum = sum([c.importance for c in clients])
+        
+    #     for client in clients:
+    #         importance = client.importance / importance_sum
+    #         client_grads = client.gradients
+            
+    #         # Check if the client's gradients match the model's parameters
+    #         if len(list(self.model.parameters())) != len(client_grads):
+    #             raise ValueError("Mismatch between client gradients and model parameters.")
+            
+    #         for server_param, client_grad in zip(self.model.parameters(), client_grads):
+    #             if server_param.shape != client_grad.shape:
+    #                 raise ValueError("Mismatch in shape between server parameters and client gradients.")
+                
+    #             if server_param.grad is None:
+    #                 server_param.grad = client_grad.clone() * importance
+    #             else:
+    #                 server_param.grad += client_grad * importance
+
+    # No need to return self.model as changes are in-place
+
+
     def update_with_gradient(self):
         self.model.train()
         self.model.step()
