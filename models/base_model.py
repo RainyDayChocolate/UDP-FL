@@ -4,7 +4,7 @@
 
 import torch
 from torch.nn.utils import clip_grad_norm_
-
+from gradients.noise import NoNoiseGenerator
 class BaseModel:
 
     def forward(self, x):
@@ -19,46 +19,25 @@ class BaseModel:
             param.data = torch.zeros_like(param.data)
 
     def train_dpsgd(self, data_loader, noise_generator):
-        self.zero_grad()
-
         # Create a dictionary to store the sum of clipped gradients for each parameter
-        summed_clipped_grads = {name: torch.zeros_like(param)
-                                 for name, param in self.named_parameters()}
-
         # Go through each batch of data
         for batch_x, batch_y in data_loader:
+            self.zero_grad()
+            batch_x, batch_y = batch_x.to(self.device), batch_y.to(self.device)
             pred_y = self.forward(batch_x)
-            loss = self.loss_fn(pred_y, batch_y)
-            if loss.numel() > 1:
-                loss = loss.sum()
+            loss = self.loss_fn(pred_y, batch_y).mean()
             # Compute gradients for the entire batch
             loss.backward()
-
+            #running_loss += loss
             # Clip gradients
+            if isinstance(noise_generator, NoNoiseGenerator):
+                self.step()
+                continue
             clip_grad_norm_(self.parameters(), max_norm=self.max_norm)
-
-            # Aggregate clipped gradients
             for name, param in self.named_parameters():
-                if param.grad is not None:
-                    summed_clipped_grads[name] += param.grad
-
-            # Clear gradients for the next iteration
-            self.zero_grad()
-
-        # Calculate the noise to add
-        for name, param in self.named_parameters():
-            noise = noise_generator.get_noise(summed_clipped_grads[name])
-            summed_clipped_grads[name] += noise
-
-        # Average the aggregated gradients
-        data_size = len(data_loader.dataset)
-        for name, param in self.named_parameters():
-            summed_clipped_grads[name] /= data_size 
-            param.grad = summed_clipped_grads[name]
-
-        # Update model parameters
-        self.step()
-
+                param.grad += noise_generator.get_noise(param.grad).to(self.device)
+            self.step()
+    
 
 
 # class BaseModel:

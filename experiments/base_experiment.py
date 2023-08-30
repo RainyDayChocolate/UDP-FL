@@ -29,7 +29,6 @@ class BaseExperiment:
     @abstractmethod
     def distribute_model(self):
         for client in self.clients:
-
             client.model.load_state_dict(self.server.model.state_dict())
 
     @abstractmethod

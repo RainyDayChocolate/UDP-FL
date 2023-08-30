@@ -26,6 +26,7 @@ In practice, both approaches can be used depending on the specific requirements 
 
 """
 from typing import List
+import torch
 from client.base_client import BaseClient
 from models.base_model import BaseModel
 
@@ -36,14 +37,13 @@ class BaseServer:
         self.model = model
 
     def aggeragate_model(self, clients):
-        self.model.zero_weights()
-        importance_sum = sum([c.importance for c in clients])
-        for client in clients:
-            importance = client.importance / importance_sum
-            for server_param, client_weight in zip(self.model.parameters(), client.weights):
-                server_param.data += client_weight * importance
+        models = [client.model for client in clients]
+        for param in self.model.state_dict():
+            self.model.state_dict()[param].copy_(torch.mean(
+                torch.stack([m.state_dict()[param].to(dtype=torch.float32) for m in models]), dim=0)
+            )
 
-        return self.model
+        
 
     def aggeragate_gradient(self, clients):
         self.model.train()
@@ -96,4 +96,7 @@ class BaseServer:
 
     def predict(self, inputs):
         self.model.eval()
-        return self.model(inputs)
+        inputs = inputs.to(self.model.device)
+        ans = self.model(inputs)
+        ans = ans.to(torch.device('cpu'))
+        return ans

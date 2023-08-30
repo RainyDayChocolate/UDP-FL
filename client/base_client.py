@@ -69,7 +69,8 @@ class BaseClient:
         # Set the model to training mode
         self.model.train()
         # Get the loss sum
-        for _ in range(client_epochs):
+        for epoch in range(client_epochs):
+            running_loss = 0
             sample_dataloder = next(dataset)
             self.model.train_dpsgd(sample_dataloder, self.noise_generator)
 
