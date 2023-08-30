@@ -7,36 +7,45 @@ from utils import CURRENT_FOLDER
 
 
 class Cifar10DatasetManager:
-    def __init__(self,
-                 train_split=0.8,
-                 batch_size=64,
-                 n_parties=2,
-                 sampling_lot_rate=0.01):
-
+    def __init__(self, train_split=0.8, batch_size=64, n_parties=2, sampling_lot_rate=0.01):
         # Seed to Shuffle the dataset
         torch.manual_seed(0)
-        self.sampling_rate = sampling_lot_rate
-        self.transformer = transforms.Compose([
-                transforms.ToTensor(),
-                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-            ])
-        train_data = datasets.CIFAR10(root=F'{CURRENT_FOLDER}/datasets',
-                                      train=True,
-                                      download=True,
-                                      transform=self.transformer)
-        test_data = datasets.CIFAR10(root=F'{CURRENT_FOLDER}/datasets',
-                                     train=False,
-                                     download=True,
-                                     transform=self.transformer)
+        np.random.seed(0)
 
+        # Data Augmentation for training set
+        self.train_transformer = transforms.Compose([
+            transforms.RandomResizedCrop(32),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
+        ])
+        
+        # No augmentation for validation and test sets
+        self.valid_test_transformer = transforms.Compose([
+            transforms.Resize(256),
+            transforms.CenterCrop(32),
+            transforms.ToTensor(),
+            transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
+        ])
+
+        self.sampling_rate = sampling_lot_rate
         self.train_split = train_split
         self.batch_size = batch_size
+
+        # Load datasets
+        train_data = datasets.CIFAR10(root=f'{CURRENT_FOLDER}/datasets',
+                                      train=True,
+                                      download=True,
+                                      transform=self.train_transformer)
+        test_data = datasets.CIFAR10(root=f'{CURRENT_FOLDER}/datasets',
+                                     train=False,
+                                     download=True,
+                                     transform=self.valid_test_transformer)
 
         train_data, valid_data = self._split_dataset(train_data)
         n_parties_train_data = self.split_train_data(train_data, n_parties)
 
         self.train_loaders = [self.create_sampling_dataloader(data) for data in n_parties_train_data]
-
         self.validation_loader = self._create_dataloader(valid_data)
         self.test_loader = self._create_dataloader(test_data)
 
@@ -44,10 +53,8 @@ class Cifar10DatasetManager:
         num_samples = len(train_dataset)
         sizes = [num_samples // n] * n
         remainder = num_samples % n
-
         for i in range(remainder):
             sizes[i] += 1
-
         partitions = random_split(train_dataset, sizes)
         return partitions
 
@@ -55,7 +62,6 @@ class Cifar10DatasetManager:
         train_size = int(len(dataset) * self.train_split)
         validation_size = len(dataset) - train_size
         train_dataset, validation_dataset = random_split(dataset, [train_size, validation_size])
-
         return train_dataset, validation_dataset
 
     def _create_dataloader(self, dataset):
