@@ -33,10 +33,9 @@ class MnistDatasetManager:
         self.batch_size = batch_size
 
         train_data, valid_data = self._split_dataset(train_data)
-        n_parties_train_data = self.split_train_data(train_data, n_parties)
+        #n_parties_train_data = self.split_train_data(train_data, n_parties)
 
-        self.train_loaders = [self.create_sampling_dataloader(data) for data in n_parties_train_data]
-
+        self.train_loaders = [self.create_sampling_dataloader(train_data) for _ in range(n_parties)]
         self.validation_loader = self._create_dataloader(valid_data)
         self.test_loader = self._create_dataloader(test_data)
 

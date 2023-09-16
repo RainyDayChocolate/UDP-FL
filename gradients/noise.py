@@ -38,7 +38,7 @@ class GaussianNoiseGenerator(NoiseGenerator):
         self.delta = delta
 
     def mechanism(self, gradient: torch.Tensor):
-        return torch.empty(gradient.size()).normal_(0, 0.821)
+        return torch.empty(gradient.size()).normal_(0, self.sensitivity)
 
 class StaircaseNoiseGenerator(NoiseGenerator):
     def __init__(self, sensitivity=0.1, epsilon=0.015, gamma=0.498):

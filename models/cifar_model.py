@@ -263,9 +263,11 @@ class Bottleneck(nn.Module, BaseModel):
 
 
 class ResNet101(nn.Module, BaseModel):
-    def __init__(self, block=Bottleneck, num_blocks=[3, 4, 23, 3], lr: float = 0.001, max_norm: float = 2, num_classes: int = 1):
+    def __init__(self, block=Bottleneck, num_blocks=[3, 4, 23, 3], lr: float = 0.001, max_norm: float = 2, num_classes: int = 10):
         super().__init__()
+        self.num_classes = 10
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.to(self.device)
         self.lr = lr
         self.max_norm = max_norm
         self.in_planes = 64
@@ -281,7 +283,7 @@ class ResNet101(nn.Module, BaseModel):
         
         # Optimizer and loss function
         self.optimizer = Adam(self.parameters(), lr=lr)
-        self.loss_fn = CrossEntropyLoss(reduction='none').to(self.device)
+        self.loss_fn = nn.CrossEntropyLoss(reduction='none').to(self.device)
 
 
     def _make_layer(self, block, planes, num_blocks, stride):
