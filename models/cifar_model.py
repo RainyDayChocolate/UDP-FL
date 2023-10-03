@@ -93,7 +93,7 @@ class ResNet(nn.Module, BaseModel):
         # Add dropout for regularization
         self.dropout = nn.Dropout(p=0.5).to(self.device)
         
-        self.optimizer = Adam(self.parameters(), lr)
+        self.optimizer = Adam(self.parameters(), lr, weight_decay=1e-4)
         self.loss_fn = CrossEntropyLoss(reduction='none').to(self.device)
         self.max_norm = max_norm
         
@@ -170,7 +170,7 @@ class ResNet18(nn.Module, BaseModel):
         
         # Global average pooling and fully connected layer
         self.global_avg_pool = nn.AdaptiveAvgPool2d((1, 1)).to(self.device)
-        self.fc = nn.Linear(512, 100).to(self.device)  # 100 classes for CIFAR-100
+        self.fc = nn.Linear(512, 10).to(self.device)  # 100 classes for CIFAR-100
         
         # Optimizer and loss function
         self.optimizer = Adam(self.parameters(), lr=lr)

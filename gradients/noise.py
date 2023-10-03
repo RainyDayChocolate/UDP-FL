@@ -25,7 +25,7 @@ class LaplaceNoiseGenerator(NoiseGenerator):
         self.delta = delta
 
     def mechanism(self, gradient: torch.Tensor):
-        laplace_distribution = Laplace(0, self.sensitivity/self.epsilon)
+        laplace_distribution = Laplace(0, self.sensitivity)
         return laplace_distribution.sample(gradient.size())
         #return torch.empty(gradient.size()).laplace_(0, 0.798)
 
@@ -41,7 +41,7 @@ class GaussianNoiseGenerator(NoiseGenerator):
         return torch.empty(gradient.size()).normal_(0, self.sensitivity)
 
 class StaircaseNoiseGenerator(NoiseGenerator):
-    def __init__(self, sensitivity=0.1, epsilon=0.015, gamma=0.498):
+    def __init__(self, sensitivity=0.01, epsilon=5, gamma=0.498):
         self.sensitivity = sensitivity
         self.epsilon = epsilon 
         self.gamma = gamma
